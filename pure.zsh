@@ -157,7 +157,7 @@ prompt_pure_preprompt_render() {
 	fi
 	# Git stash symbol (if opted in).
 	if [[ -n $prompt_pure_git_stash ]]; then
-		preprompt_parts+=('%F{$prompt_pure_colors[git:stash]}${PURE_GIT_STASH_SYMBOL:-≡}%f')
+		preprompt_parts+=('%F{$prompt_pure_colors[git:stash]}${PURE_GIT_STASH_SYMBOL:- }%f')
 	fi
 
 	# Execution time.
@@ -188,7 +188,7 @@ prompt_pure_preprompt_render() {
 
 	if [[ $1 == precmd ]]; then
 		# Initial newline, for spaciousness.
-		print
+		# print
 	elif [[ $prompt_pure_last_prompt != $expanded_prompt ]]; then
 		# Redraw the prompt.
 		prompt_pure_reset_prompt
@@ -491,8 +491,8 @@ prompt_pure_check_git_arrows() {
 	setopt localoptions noshwordsplit
 	local arrows left=${1:-0} right=${2:-0}
 
-	(( right > 0 )) && arrows+=${PURE_GIT_DOWN_ARROW:-⇣}
-	(( left > 0 )) && arrows+=${PURE_GIT_UP_ARROW:-⇡}
+	(( right > 0 )) && arrows+=${PURE_GIT_DOWN_ARROW:- }
+	(( left > 0 )) && arrows+=${PURE_GIT_UP_ARROW:- }
 
 	[[ -n $arrows ]] || return
 	typeset -g REPLY=$arrows
@@ -557,7 +557,12 @@ prompt_pure_async_callback() {
 			[[ -n $info[top] ]] && [[ -z $prompt_pure_vcs_info[top] ]] && prompt_pure_async_refresh
 
 			# Always update branch, top-level and stash.
-			prompt_pure_vcs_info[branch]=$info[branch]
+			if [[ -n $info[branch] ]]; then
+				prompt_pure_vcs_info[branch]=" $info[branch]"
+			else
+				prompt_pure_vcs_info[branch]="$info[branch]"
+			fi
+
 			prompt_pure_vcs_info[top]=$info[top]
 			prompt_pure_vcs_info[action]=$info[action]
 
@@ -574,7 +579,7 @@ prompt_pure_async_callback() {
 			if (( code == 0 )); then
 				unset prompt_pure_git_dirty
 			else
-				typeset -g prompt_pure_git_dirty="*"
+				typeset -g prompt_pure_git_dirty="  "
 			fi
 
 			[[ $prev_dirty != $prompt_pure_git_dirty ]] && do_render=1
@@ -821,12 +826,12 @@ prompt_pure_setup() {
 		execution_time       yellow
 		git:arrow            cyan
 		git:stash            cyan
-		git:branch           242
+		git:branch           yellow
 		git:branch:cached    red
 		git:action           yellow
 		git:dirty            218
 		host                 242
-		path                 blue
+		path                 green
 		prompt:error         red
 		prompt:success       magenta
 		prompt:continuation  242
